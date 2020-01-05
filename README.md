@@ -16,6 +16,18 @@ To develop a deep learning model which can recognize verification code in 12306 
 本工程中的smallervggnet也是直接来源于该[repo](https://github.com/wudinaonao/12306CaptchaCrack)。
 如果原作者觉得这种方式存在侵权，可以联系本人删掉网盘共享的数据集。
 
+## 环境需求
+keras
+opencv-python
+imutils
+matplotlib
+numpy
+
+可通过requirements.txt文件安装所需第三方模块
+```shell
+pip3 install -r requirements.txt
+```
+
 ## 训练
 
 ```shell
