@@ -9,7 +9,7 @@ To develop a deep learning model which can recognize verification code in 12306 
 
 ## 数据集
 
-可以直接从[repo](https://github.com/wudinaonao/12306CaptchaCrack)中获取数据集，也可以通过百度网盘获取：[12306verifycode-dataset](https://pan.baidu.com/s/1cgT_D2vmU72J5ARkSkOdUw)，提取码: ci9v
+可以直接从[repo](https://github.com/wudinaonao/12306CaptchaCrack)中获取数据集，不过该数据测试集目录的组织与训练集有些不一致，需要进行调整。也可以发送关键字【数据】到“青衣极客”公众号获取下载链接，该数据已经调整测试集目录，可以直接使用。
 
 百度网盘中数据集与[repo](https://github.com/wudinaonao/12306CaptchaCrack)的数据集是一致的，只是test_data中文件的组织形式改成与训练集一致。
 
