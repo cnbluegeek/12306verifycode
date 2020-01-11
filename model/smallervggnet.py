@@ -3,6 +3,7 @@ from keras.layers.normalization import BatchNormalization
 from keras.layers.convolutional import Conv2D, MaxPooling2D
 from keras.layers.core import Activation, Flatten, Dropout, Dense
 from keras import backend as K
+from keras.utils import plot_model
 
 class SmallerVGGNet():
     @staticmethod
@@ -68,3 +69,11 @@ class SmallerVGGNet():
         
         return model
     
+def main():
+
+    model = SmallerVGGNet.build(67, 67, 3, 80)
+    model.summary()
+    plot_model(model, 'output/smallerbggnet.png', show_shapes=True)
+
+if __name__ == '__main__':
+    main()

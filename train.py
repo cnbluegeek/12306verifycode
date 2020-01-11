@@ -18,6 +18,24 @@ from keras.models import load_model
 from model.smallervggnet import SmallerVGGNet
 
 
+def check_dir(dirname, report_error=False):
+    """ Check existence of specific directory
+    Args:
+        dirname: path to specific directory
+        report_error: if it is True, error will be report when dirname not exists
+                      if it is False, directory will be created when dirnam not exists
+    Return:
+        None
+    Raise:
+        ValueError, if report_error is True and dirname not exists 
+    """
+    if not os.path.exists(dirname):
+        if report_error is True:
+            raise ValueError('not exist directory: {}'.format(dirname))
+        else:
+            os.makedirs(dirname)
+            print('not exist {}, but has been created'.format(dirname))
+
 def get_label_name(image_path):
     """ Get label name from image path
     """
@@ -138,8 +156,10 @@ def train(args):
     """ Train model on trainset and validate on valset
     """
     # get image paths and split dataset
+    trainval_dir = os.path.join(args.dataset_dir, 'train_val')
+    check_dir(trainval_dir, report_error=True)
     train_img_paths, test_img_paths, label2idx, idx2label = \
-        get_and_split_dataset(args.dataset_dir, test_size=args.test_ratio)
+        get_and_split_dataset(trainval_dir, test_size=args.test_ratio)
     with open(args.label_path, 'w') as wfid:
         wfid.write(json.dumps(label2idx))
     
@@ -206,8 +226,10 @@ def evaluate(args):
     """ Evaluate model on testset
     """
     # get image paths and split dataset
+    testset_dir = os.path.join(args.dataset_dir, 'test')
+    check_dir(testset_dir, report_error=True)
     _, test_img_paths, _, _ = \
-        get_and_split_dataset(args.dataset_dir, test_size=1.0)
+        get_and_split_dataset(testset_dir, test_size=1.0)
     with open(args.label_path, 'r') as fid:
         label2idx = json.loads(fid.read())
     idx2label = defaultdict(str)
@@ -222,9 +244,8 @@ def evaluate(args):
     model = load_model(args.model_path)
     
     # get prediction
-    testset_gen = testset.generate(epoch_stop=True)
     error_cnt = 0
-    for images, labels in testset_gen:
+    for images, labels in testset.generate(epoch_stop=True):
         # predict
         gt_labels = np.argmax(labels, axis=1)
         pred_probs = model.predict(images)
@@ -234,8 +255,16 @@ def evaluate(args):
         for idx, gt in enumerate(gt_labels):
             pred = pred_labels[idx]
             print('gt={}, pred={}'.format(idx2label[gt], idx2label[pred]))
+            true_or_false = True
             if gt != pred:
                 error_cnt += 1
+                true_or_false = False
+            if args.save_samples is True:
+                img_path = 'output/test_{}_gt_{}-pred_{}.png'.format(
+                    true_or_false, idx2label[gt], idx2label[pred])
+                img = images[idx, ...] * 255
+                img = img.astype(np.uint8)
+                cv2.imwrite(img_path, cv2.cvtColor(img, cv2.COLOR_RGB2BGR))
     num_samples = testset.get_dataset_size()
     print('total acc={}%'.format((num_samples - error_cnt)*100 / float(num_samples)))
         
@@ -251,25 +280,6 @@ LABELBIN_SAVE = os.path.join('output', 'label', '12306cate.json')
 LOSS_PLOT_PATH = os.path.join('output', 'accuracy_and_loss.png')   
 # default input image shape
 TARGET_SHAPE = (67, 67, 3)
-def check_dir(dirname, report_error=False):
-    """ Check existence of specific directory
-    Args:
-        dirname: path to specific directory
-        report_error: if it is True, error will be report when dirname not exists
-                      if it is False, directory will be created when dirnam not exists
-    Return:
-        None
-    Raise:
-        ValueError, if report_error is True and dirname not exists 
-    """
-    if not os.path.exists(dirname):
-        if report_error is True:
-            raise ValueError('not exist directory: {}'.format(dirname))
-        else:
-            os.makedirs(dirname)
-            print('not exist {}, but has been created'.format(dirname))
-
-
 def parse_args():
     """ Parse arguments from command line
     """
@@ -290,6 +300,8 @@ def parse_args():
     ap.add_argument('-i', '--init-lr', type=float, default=1e-3)
     ap.add_argument('--phase', type=str, default='train', choices=['train', 'evaluate'], 
                     help='specify operations, train or evaluate')
+    ap.add_argument('--save-samples', type=bool, default=True, 
+                    help='flag to indicate whether save samples on evaluating')
     args = ap.parse_args()
     # check args
     check_dir(args.dataset_dir, report_error=True)
