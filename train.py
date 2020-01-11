@@ -271,7 +271,7 @@ def evaluate(args):
 # default dataset dir
 DATASET_HOME = os.path.expanduser('~/Database/Dataset')
 DATASET_PATH = os.path.join(
-    DATASET_HOME, '12306verifycode-dataset', 'train_val')
+    DATASET_HOME, '12306verifycode-dataset')
 # default model path
 MODEL_SAVE_PATH = os.path.join('output', 'model', '12306verifycode.model')
 # default path of label2idx map
